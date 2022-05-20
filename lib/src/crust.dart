@@ -19,6 +19,12 @@ class Crust {
         _crustLib.lookup<ffi.NativeFunction<_HaltFunc>>('halt').asFunction();
     halt();
   }
+
+  void run() {
+    final _RunFuncDart run =
+        _crustLib.lookup<ffi.NativeFunction<_RunFunc>>('run').asFunction();
+    run();
+  }
 }
 
 typedef _InitFunc = ffi.Void Function(ffi.Pointer<Utf8>);
@@ -26,3 +32,6 @@ typedef _InitFuncDart = void Function(ffi.Pointer<Utf8>);
 
 typedef _HaltFunc = ffi.Void Function();
 typedef _HaltFuncDart = void Function();
+
+typedef _RunFunc = ffi.Void Function();
+typedef _RunFuncDart = void Function();
