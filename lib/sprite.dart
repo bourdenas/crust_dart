@@ -34,7 +34,7 @@ class Sprite {
     crust.execute(action);
   }
 
-  /// Applies [script] animation on the sprite.
+  /// Applies [script] animation on the Sprite.
   ///
   /// If [onDone] is provided it will be invoked when the script finishes
   /// execution.
@@ -55,6 +55,15 @@ class Sprite {
         sceneNodeId: id,
         script: script,
         speed: 1.0,
+      ),
+    );
+    crust.execute(action);
+  }
+
+  void stopAnimation() {
+    final action = Action(
+      stopAnimation: SceneNodeAction(
+        sceneNode: SceneNode(id: id),
       ),
     );
     crust.execute(action);
