@@ -3,6 +3,8 @@ import 'dart:ffi' as ffi;
 import 'package:crust_dart/src/proto/action.pb.dart';
 import 'package:ffi/ffi.dart';
 
+final crust = Crust();
+
 class Crust {
   late ffi.DynamicLibrary _crustLib;
   late _ExecFuncDart _execute;
@@ -32,7 +34,7 @@ class Crust {
     run();
   }
 
-  /// Executes an `Action` in crust.
+  /// Executes an [Action] in crust.
   ///
   /// Returns the entity id created, if any.
   int execute(Action action) {
