@@ -1,6 +1,8 @@
 import 'dart:ffi' as ffi;
 
+import 'package:crust_dart/src/input_manager.dart';
 import 'package:crust_dart/src/proto/action.pb.dart';
+import 'package:crust_dart/src/proto/user_input.pb.dart';
 import 'package:ffi/ffi.dart';
 
 final crust = Crust();
@@ -14,12 +16,17 @@ class Crust {
 
     final _InitFuncDart init =
         _crustLib.lookup<ffi.NativeFunction<_InitFunc>>('init').asFunction();
+    final _RegisterHandlerFuncDart registerHandler = _crustLib
+        .lookup<ffi.NativeFunction<_RegisterHandlerFunc>>('register_handler')
+        .asFunction();
 
     _execute =
         _crustLib.lookup<ffi.NativeFunction<_ExecFunc>>('execute').asFunction();
 
     final ffi.Pointer<Utf8> assetsPathCstr = assetsPath.toNativeUtf8();
     init(assetsPathCstr);
+    registerHandler(
+        ffi.Pointer.fromFunction<_InputHandlerCallback>(_inputHandler));
   }
 
   void halt() {
@@ -63,3 +70,15 @@ typedef _RunFuncDart = void Function();
 
 typedef _ExecFunc = ffi.Uint32 Function(ffi.Int64 len, ffi.Pointer<ffi.Void>);
 typedef _ExecFuncDart = int Function(int len, ffi.Pointer<ffi.Void>);
+
+typedef _InputHandlerCallback = ffi.Void Function(
+    ffi.Uint64 len, ffi.Pointer<ffi.Uint8>);
+typedef _RegisterHandlerFunc = ffi.Uint32 Function(
+    ffi.Pointer<ffi.NativeFunction<_InputHandlerCallback>>);
+typedef _RegisterHandlerFuncDart = int Function(
+    ffi.Pointer<ffi.NativeFunction<_InputHandlerCallback>>);
+
+void _inputHandler(int len, ffi.Pointer<ffi.Uint8> ptr) {
+  final event = UserInput()..mergeFromBuffer(ptr.asTypedList(len));
+  inputManager.handle(event);
+}

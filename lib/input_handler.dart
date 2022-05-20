@@ -1,19 +1,24 @@
+import 'package:crust_dart/src/input_manager.dart';
 import 'package:crust_dart/src/proto/user_input.pb.dart';
 
 class InputHandler {
-  Map<String, KeyTrigger> keyMapping = {};
+  final Map<String, KeyTrigger> _keyMapping = {};
 
-  void registerKey(String key, {Function? onPressed, Function? onReleased}) {
-    keyMapping[key] = KeyTrigger(onPressed, onReleased);
+  void install() {
+    inputManager.register(this);
   }
 
-  void handleInput(UserInput event) {
+  void registerKey(String key, {Function? onPressed, Function? onReleased}) {
+    _keyMapping[key] = KeyTrigger(onPressed, onReleased);
+  }
+
+  void handle(UserInput event) {
     if (!event.hasKeyEvent() || event.keyEvent.keyState == KeyState.NONE) {
       return;
     }
 
     print('🎯 $event');
-    final trigger = keyMapping[event.keyEvent.key];
+    final trigger = _keyMapping[event.keyEvent.key];
     if (trigger == null) {
       return;
     }
