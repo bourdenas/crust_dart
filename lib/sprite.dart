@@ -8,7 +8,7 @@ import 'package:crust_dart/src/proto/scene_node.pb.dart';
 
 /// Sprite representation in crust.
 class Sprite {
-  late int id;
+  late int crustHandle;
 
   /// Create a sprite on specified [position] with given [frameIndex].
   void create(String spriteId, Point<int> position, {int frameIndex = 0}) {
@@ -21,15 +21,13 @@ class Sprite {
         ),
       ),
     );
-    id = crust.execute(action);
+    crustHandle = crust.execute(action);
   }
 
   /// Remove the sprite from the scene.
   void destroy() {
     final action = Action(
-      destroySceneNode: SceneNodeAction(
-        sceneNode: SceneNode(id: id),
-      ),
+      destroySceneNode: SceneNodeRefAction(crustNodeHandle: crustHandle),
     );
     crust.execute(action);
   }
@@ -52,7 +50,7 @@ class Sprite {
   }) {
     final action = Action(
       playAnimation: AnimationScriptAction(
-        sceneNodeId: id,
+        crustNodeHandle: crustHandle,
         script: script,
         speed: 1.0,
       ),
@@ -62,9 +60,7 @@ class Sprite {
 
   void stopAnimation() {
     final action = Action(
-      stopAnimation: SceneNodeAction(
-        sceneNode: SceneNode(id: id),
-      ),
+      stopAnimation: SceneNodeRefAction(crustNodeHandle: crustHandle),
     );
     crust.execute(action);
   }
