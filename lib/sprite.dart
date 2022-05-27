@@ -8,26 +8,36 @@ import 'package:crust_dart/src/proto/scene_node.pb.dart';
 
 /// Sprite representation in crust.
 class Sprite {
-  late int crustHandle;
+  String? id;
+  static int _spriteUniqueId = 0;
+
+  Sprite([this.id]);
 
   /// Create a sprite on specified [position] with given [frameIndex].
-  void create(String spriteId, Point<int> position, {int frameIndex = 0}) {
+  void create(
+    String spriteId,
+    Point<int> position, {
+    int frameIndex = 0,
+  }) {
+    id = id ?? '${spriteId}_${_spriteUniqueId++}';
+
     final action = Action(
       createSceneNode: SceneNodeAction(
         sceneNode: SceneNode(
+          id: id,
           position: Vector(x: position.x.toDouble(), y: position.y.toDouble()),
           spriteId: spriteId,
           frameIndex: frameIndex,
         ),
       ),
     );
-    crustHandle = crust.execute(action);
+    crust.execute(action);
   }
 
   /// Remove the sprite from the scene.
   void destroy() {
     final action = Action(
-      destroySceneNode: SceneNodeRefAction(crustNodeHandle: crustHandle),
+      destroySceneNode: SceneNodeRefAction(sceneNodeId: id),
     );
     crust.execute(action);
   }
@@ -50,7 +60,7 @@ class Sprite {
   }) {
     final action = Action(
       playAnimation: AnimationScriptAction(
-        crustNodeHandle: crustHandle,
+        sceneNodeId: id,
         script: script,
         speed: 1.0,
       ),
@@ -60,7 +70,7 @@ class Sprite {
 
   void stopAnimation() {
     final action = Action(
-      stopAnimation: SceneNodeRefAction(crustNodeHandle: crustHandle),
+      stopAnimation: SceneNodeRefAction(sceneNodeId: id),
     );
     crust.execute(action);
   }
