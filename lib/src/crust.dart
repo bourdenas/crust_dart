@@ -1,7 +1,9 @@
 import 'dart:ffi' as ffi;
 
+import 'package:crust_dart/src/event_manager.dart';
 import 'package:crust_dart/src/input_manager.dart';
 import 'package:crust_dart/src/proto/action.pb.dart';
+import 'package:crust_dart/src/proto/event.pb.dart';
 import 'package:crust_dart/src/proto/user_input.pb.dart';
 import 'package:ffi/ffi.dart';
 
@@ -16,8 +18,13 @@ class Crust {
 
     final _InitFuncDart init =
         _crustLib.lookup<ffi.NativeFunction<_InitFunc>>('init').asFunction();
-    final _RegisterHandlerFuncDart registerHandler = _crustLib
-        .lookup<ffi.NativeFunction<_RegisterHandlerFunc>>('register_handler')
+    final _RegisterInputHandlerFuncDart registerHandler = _crustLib
+        .lookup<ffi.NativeFunction<_RegisterInputHandlerFunc>>(
+            'register_input_handler')
+        .asFunction();
+    final _RegisterEventHandlerFuncDart registerEventHandler = _crustLib
+        .lookup<ffi.NativeFunction<_RegisterEventHandlerFunc>>(
+            'register_event_handler')
         .asFunction();
 
     _execute =
@@ -27,6 +34,8 @@ class Crust {
     init(assetsPathCstr);
     registerHandler(
         ffi.Pointer.fromFunction<_InputHandlerCallback>(_inputHandler));
+    registerEventHandler(
+        ffi.Pointer.fromFunction<_InputHandlerCallback>(_eventHandler));
   }
 
   void halt() {
@@ -73,12 +82,24 @@ typedef _ExecFuncDart = int Function(int len, ffi.Pointer<ffi.Void>);
 
 typedef _InputHandlerCallback = ffi.Void Function(
     ffi.Uint64 len, ffi.Pointer<ffi.Uint8>);
-typedef _RegisterHandlerFunc = ffi.Uint32 Function(
+typedef _RegisterInputHandlerFunc = ffi.Uint32 Function(
     ffi.Pointer<ffi.NativeFunction<_InputHandlerCallback>>);
-typedef _RegisterHandlerFuncDart = int Function(
+typedef _RegisterInputHandlerFuncDart = int Function(
     ffi.Pointer<ffi.NativeFunction<_InputHandlerCallback>>);
 
 void _inputHandler(int len, ffi.Pointer<ffi.Uint8> ptr) {
   final event = UserInput()..mergeFromBuffer(ptr.asTypedList(len));
   inputManager.handle(event);
+}
+
+typedef _EventHandlerCallback = ffi.Void Function(
+    ffi.Uint64 len, ffi.Pointer<ffi.Uint8>);
+typedef _RegisterEventHandlerFunc = ffi.Uint32 Function(
+    ffi.Pointer<ffi.NativeFunction<_EventHandlerCallback>>);
+typedef _RegisterEventHandlerFuncDart = int Function(
+    ffi.Pointer<ffi.NativeFunction<_EventHandlerCallback>>);
+
+void _eventHandler(int len, ffi.Pointer<ffi.Uint8> ptr) {
+  final event = Event()..mergeFromBuffer(ptr.asTypedList(len));
+  eventManager.handle(event);
 }
