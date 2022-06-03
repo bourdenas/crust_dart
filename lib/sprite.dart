@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:crust_dart/event_handler.dart';
 import 'package:crust_dart/src/crust.dart';
 import 'package:crust_dart/src/proto/action.pb.dart';
 import 'package:crust_dart/src/proto/animation.pb.dart';
@@ -13,7 +14,7 @@ class Sprite {
 
   Sprite([this.id]);
 
-  /// Create a sprite on specified [position] with given [frameIndex].
+  /// Create a sprite on specified `position` with given `frameIndex`.
   void create(
     String spriteId,
     Point<int> position, {
@@ -74,4 +75,30 @@ class Sprite {
     );
     crust.execute(action);
   }
+
+  /// Registers a `handler` that is triggered when this sprite collide with
+  /// other sprites.
+  ///
+  /// `otherId` can be either a `Sprite.id` or the resource id of the `Sprite`.
+  void onCollision(String otherId, CollisionHandler handler) {
+    EventHandler(
+      '${id}_collision',
+      (event) => handler(
+        this,
+        Sprite(event.onCollision.rhsId),
+        event.onCollision.intersection,
+      ),
+    );
+
+    final action = Action(
+      onCollision: CollisionAction(
+        sceneNodeId: id,
+        otherId: otherId,
+      ),
+    );
+    crust.execute(action);
+  }
 }
+
+typedef CollisionHandler = void Function(
+    Sprite lhs, Sprite rhs, Box intersection);
