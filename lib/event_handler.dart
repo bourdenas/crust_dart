@@ -2,20 +2,15 @@ import 'package:crust_dart/src/event_manager.dart';
 import 'package:crust_dart/src/proto/event.pb.dart';
 
 class EventHandler {
-  final Map<String, Function> _handlers = {};
+  final EventHandlerFunc _handler;
 
-  void install() {
-    eventManager.register(this);
-  }
-
-  void register(String eventId, Function handler) {
-    _handlers[eventId] = handler;
+  EventHandler(String eventId, this._handler) {
+    eventManager.register(eventId, this);
   }
 
   void handle(Event event) {
-    final handler = _handlers[event.eventId];
-    if (handler != null) {
-      handler();
-    }
+    _handler(event);
   }
 }
+
+typedef EventHandlerFunc = void Function(Event event);

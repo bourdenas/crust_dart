@@ -1,13 +1,15 @@
+import 'dart:collection';
+
 import 'package:crust_dart/event_handler.dart';
 import 'package:crust_dart/src/proto/event.pb.dart';
 
 final eventManager = EventManager();
 
 class EventManager {
-  final List<EventHandler> _handlers = [];
+  final _handlers = HashMap<String, EventHandler>();
 
-  void register(EventHandler handler) {
-    _handlers.add(handler);
+  void register(String eventId, EventHandler handler) {
+    _handlers[eventId] = handler;
   }
 
   void clear() {
@@ -15,8 +17,6 @@ class EventManager {
   }
 
   void handle(Event event) {
-    for (final handler in _handlers) {
-      handler.handle(event);
-    }
+    _handlers[event.eventId]?.handle(event);
   }
 }

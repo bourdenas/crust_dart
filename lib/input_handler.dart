@@ -17,7 +17,6 @@ class InputHandler {
       return;
     }
 
-    print('🎯 $event');
     final trigger = _keyMapping[event.keyEvent.key];
     if (trigger == null) {
       return;
