@@ -43,13 +43,13 @@ class Sprite {
     crust.execute(action);
   }
 
-  /// Applies [script] animation on the Sprite.
+  /// Applies an animation `script` on the Sprite.
   ///
-  /// If [onDone] is provided it will be invoked when the script finishes
+  /// If `onDone` is provided it will be invoked when the script finishes
   /// execution.
-  /// If [onRewind] is provided it will be invoked when the script restarts
-  /// execution.
-  /// The [onPartDone] is a map from animation script part name to handlers. If
+  /// If `onRewind` is provided it will be invoked when the script restarts
+  /// execution, if repeatable.
+  /// The `onPartDone` is a map from animation script part name to handlers. If
   /// provided a handler will be invoked when the corresponding script part
   /// finishes execution.
   void playAnimation({
@@ -76,19 +76,33 @@ class Sprite {
     crust.execute(action);
   }
 
-  /// Registers a `handler` that is triggered when this sprite collide with
-  /// other sprites.
+  /// Registers a `onCollision` and `onDetach` handlers triggered by collisions
+  /// with `otherId` sprites.
   ///
   /// `otherId` can be either a `Sprite.id` or the resource id of the `Sprite`.
-  void onCollision(String otherId, CollisionHandler handler) {
-    EventHandler(
-      '${id}_collision',
-      (event) => handler(
-        this,
-        Sprite(event.onCollision.rhsId),
-        event.onCollision.intersection,
-      ),
-    );
+  void collidesWith(String otherId,
+      {CollisionHandler? onCollision, CollisionHandler? onDetach}) {
+    if (onCollision != null) {
+      EventHandler(
+        '${id}_collide',
+        (event) => onCollision(
+          this,
+          Sprite(event.onCollision.rhsId),
+          event.onCollision.intersection,
+        ),
+      );
+    }
+
+    if (onDetach != null) {
+      EventHandler(
+        '${id}_detach',
+        (event) => onDetach(
+          this,
+          Sprite(event.onDetach.rhsId),
+          event.onDetach.intersection,
+        ),
+      );
+    }
 
     final action = Action(
       onCollision: CollisionAction(
