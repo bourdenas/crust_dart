@@ -45,25 +45,64 @@ class Sprite {
 
   /// Applies an animation `script` on the Sprite.
   ///
-  /// If `onDone` is provided it will be invoked when the script finishes
+  /// If `onDone` is provided, it will be invoked when the script finishes
   /// execution.
-  /// If `onRewind` is provided it will be invoked when the script restarts
+  ///
+  /// If `onRewind` is provided, it will be invoked when the script restarts
   /// execution, if repeatable.
-  /// The `onPartDone` is a map from animation script part name to handlers. If
-  /// provided a handler will be invoked when the corresponding script part
-  /// finishes execution.
+  ///
+  /// If `onSegmentDone` is provided, it will be invoked each time an animation
+  /// segment finishes execution.
   void playAnimation({
-    required AnimationScript script,
-    // EventHandler onDone,
-    // EventHandler onRewind,
-    // Map<String, EventHandler> onPartDone,
+    required List<Animation> segments,
+    int repeat = 1,
+    double speed = 1.0,
+    String? scriptId,
+    AnimationHandler? onDone,
+    AnimationHandler? onRewind,
+    AnimationHandler? onSegmentDone,
     bool reversed = false,
   }) {
+    if (onDone != null) {
+      EventHandler(
+        '${id}_script_done',
+        (event) => onDone(
+          event.animationScriptDone.animationId,
+          event.animationScriptDone.position,
+          event.animationScriptDone.frameIndex,
+        ),
+      );
+    }
+    if (onRewind != null) {
+      EventHandler(
+        '${id}_script_rewind',
+        (event) => onRewind(
+          event.animationScriptRewind.animationId,
+          event.animationScriptRewind.position,
+          event.animationScriptRewind.frameIndex,
+        ),
+      );
+    }
+    if (onSegmentDone != null) {
+      EventHandler(
+        '${id}_segment_done',
+        (event) => onSegmentDone(
+          event.animationScriptRewind.animationId,
+          event.animationScriptRewind.position,
+          event.animationScriptRewind.frameIndex,
+        ),
+      );
+    }
+
     final action = Action(
       playAnimation: AnimationScriptAction(
         sceneNodeId: id,
-        script: script,
-        speed: 1.0,
+        script: AnimationScript(
+          animation: segments,
+          id: scriptId,
+          repeat: repeat,
+        ),
+        speed: speed,
       ),
     );
     crust.execute(action);
@@ -116,3 +155,6 @@ class Sprite {
 
 typedef CollisionHandler = void Function(
     Sprite lhs, Sprite rhs, Box intersection);
+
+typedef AnimationHandler = void Function(
+    String animationId, Vector position, int frameIndex);
