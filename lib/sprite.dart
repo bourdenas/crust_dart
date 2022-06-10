@@ -19,6 +19,7 @@ class Sprite {
     String spriteId,
     Point<int> position, {
     int frameIndex = 0,
+    bool rigidBody = false,
   }) {
     id = id ?? '${spriteId}_${_spriteUniqueId++}';
 
@@ -29,6 +30,7 @@ class Sprite {
           position: Vector(x: position.x.toDouble(), y: position.y.toDouble()),
           spriteId: spriteId,
           frameIndex: frameIndex,
+          rigidBody: rigidBody,
         ),
       ),
     );
