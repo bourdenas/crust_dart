@@ -13,7 +13,7 @@ class Crust {
   late ffi.DynamicLibrary _crustLib;
   late _ExecFuncDart _execute;
 
-  void init(String libPath, String assetsPath) {
+  void init(String libPath, String assetsPath, int width, int height) {
     _crustLib = ffi.DynamicLibrary.open("$libPath/crust_lib.dll");
 
     final _InitFuncDart init =
@@ -31,7 +31,7 @@ class Crust {
         _crustLib.lookup<ffi.NativeFunction<_ExecFunc>>('execute').asFunction();
 
     final ffi.Pointer<Utf8> assetsPathCstr = assetsPath.toNativeUtf8();
-    init(assetsPathCstr);
+    init(assetsPathCstr, width, height);
     registerHandler(
         ffi.Pointer.fromFunction<_InputHandlerCallback>(_inputHandler));
     registerEventHandler(
@@ -68,8 +68,9 @@ class Crust {
   }
 }
 
-typedef _InitFunc = ffi.Void Function(ffi.Pointer<Utf8>);
-typedef _InitFuncDart = void Function(ffi.Pointer<Utf8>);
+typedef _InitFunc = ffi.Void Function(
+    ffi.Pointer<Utf8>, ffi.Uint32, ffi.Uint32);
+typedef _InitFuncDart = void Function(ffi.Pointer<Utf8>, int, int);
 
 typedef _HaltFunc = ffi.Void Function();
 typedef _HaltFuncDart = void Function();
