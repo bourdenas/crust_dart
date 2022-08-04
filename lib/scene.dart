@@ -1,5 +1,6 @@
 import 'package:crust_dart/src/crust.dart';
 import 'package:crust_dart/src/proto/action.pb.dart';
+import 'package:crust_dart/src/proto/primitives.pb.dart';
 
 /// Scene representation in crust.
 class Scene {
@@ -7,9 +8,12 @@ class Scene {
 
   Scene([this.resource]);
 
-  void load() {
+  void load({Box? viewport}) {
     final action = Action(
-      loadScene: SceneAction(resource: resource),
+      loadScene: SceneAction(
+        resource: resource,
+        viewport: viewport,
+      ),
     );
     crust.execute(action);
   }
