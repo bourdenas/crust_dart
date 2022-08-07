@@ -17,4 +17,13 @@ class Scene {
     );
     crust.execute(action);
   }
+
+  void scroll(Vector vec) {
+    final action = Action(
+      scroll: ScrollAction(
+        vec: vec,
+      ),
+    );
+    crust.execute(action);
+  }
 }
