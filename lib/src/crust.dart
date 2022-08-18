@@ -3,6 +3,7 @@ import 'dart:ffi' as ffi;
 import 'package:crust_dart/src/event_manager.dart';
 import 'package:crust_dart/src/input_manager.dart';
 import 'package:crust_dart/src/proto/action.pb.dart';
+import 'package:crust_dart/src/proto/config.pbserver.dart';
 import 'package:crust_dart/src/proto/event.pb.dart';
 import 'package:crust_dart/src/proto/user_input.pb.dart';
 import 'package:ffi/ffi.dart';
@@ -13,7 +14,7 @@ class Crust {
   late ffi.DynamicLibrary _crustLib;
   late _ExecFuncDart _execute;
 
-  void init(String libPath, String assetsPath, int width, int height) {
+  void init(String libPath, CrustConfig config) {
     _crustLib = ffi.DynamicLibrary.open("$libPath/crust_lib.dll");
 
     final _InitFuncDart init =
@@ -30,8 +31,16 @@ class Crust {
     _execute =
         _crustLib.lookup<ffi.NativeFunction<_ExecFunc>>('execute').asFunction();
 
-    final ffi.Pointer<Utf8> assetsPathCstr = assetsPath.toNativeUtf8();
-    init(assetsPathCstr, width, height);
+    final encodedConfig = config.writeToBuffer();
+    final ffi.Pointer<ffi.Uint8> bytes =
+        malloc.allocate<ffi.Uint8>(encodedConfig.length);
+    for (var i = 0; i < encodedConfig.length; i++) {
+      bytes.elementAt(i).value = encodedConfig[i];
+    }
+    final ffi.Pointer<ffi.Void> voidStar = bytes.cast<ffi.Void>();
+    init(encodedConfig.length, voidStar);
+    malloc.free(voidStar);
+
     registerHandler(
         ffi.Pointer.fromFunction<_InputHandlerCallback>(_inputHandler));
     registerEventHandler(
@@ -68,9 +77,8 @@ class Crust {
   }
 }
 
-typedef _InitFunc = ffi.Void Function(
-    ffi.Pointer<Utf8>, ffi.Uint32, ffi.Uint32);
-typedef _InitFuncDart = void Function(ffi.Pointer<Utf8>, int, int);
+typedef _InitFunc = ffi.Void Function(ffi.Int64 len, ffi.Pointer<ffi.Void>);
+typedef _InitFuncDart = void Function(int len, ffi.Pointer<ffi.Void>);
 
 typedef _HaltFunc = ffi.Void Function();
 typedef _HaltFuncDart = void Function();
